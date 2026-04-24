@@ -7,9 +7,9 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
   :root {
-    --bg: #0d0d0d; --surface: #161616; --surface2: #1f1f1f;
-    --border: #2a2a2a; --accent: #00ff88; --accent2: #0088ff;
-    --text: #e8e8e8; --muted: #666; --radius: 10px;
+    --bg:#0d0d0d; --surface:#161616; --surface2:#1f1f1f;
+    --border:#2a2a2a; --accent:#00ff88; --accent2:#0088ff;
+    --text:#e8e8e8; --muted:#666; --radius:10px;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'IBM Plex Sans',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
@@ -17,226 +17,256 @@
   /* LOGIN */
   #login-screen { display:flex; align-items:center; justify-content:center; height:100vh; }
   .login-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:48px 40px; width:360px; }
-  .login-box .logo { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:32px; }
+  .logo { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:32px; }
   .login-box h1 { font-size:24px; font-weight:600; margin-bottom:8px; }
   .login-box p { font-size:13px; color:var(--muted); margin-bottom:32px; }
   .field { margin-bottom:16px; }
   .field label { display:block; font-size:11px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; }
   .field input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; outline:none; transition:border-color .2s; }
   .field input:focus { border-color:var(--accent); }
-  .btn-primary { width:100%; background:var(--accent); color:#000; border:none; border-radius:var(--radius); padding:13px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; letter-spacing:1px; cursor:pointer; margin-top:8px; transition:opacity .2s; }
-  .btn-primary:hover { opacity:.85; }
+  .btn-login { width:100%; background:var(--accent); color:#000; border:none; border-radius:var(--radius); padding:13px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; letter-spacing:1px; cursor:pointer; margin-top:8px; transition:opacity .2s; }
+  .btn-login:hover { opacity:.85; }
   .error-msg { font-size:12px; color:#ff4444; margin-top:12px; display:none; }
 
-  /* CHAT */
-  #chat-screen { display:none; height:100vh; flex-direction:row; }
-  .sidebar { width:260px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
-  .sidebar-header { padding:20px 16px 16px; border-bottom:1px solid var(--border); }
-  .sidebar-header .app-name { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:4px; }
-  .sidebar-header .user-info { font-size:15px; font-weight:600; }
-  .sidebar-header .user-sub { font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; margin-top:2px; }
-  .section-label { font-size:10px; font-family:'IBM Plex Mono',monospace; letter-spacing:2px; color:var(--muted); text-transform:uppercase; padding:16px 16px 8px; }
-  .user-list { flex:1; overflow-y:auto; padding:0 8px 8px; }
-  .user-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:var(--radius); cursor:pointer; transition:background .15s; margin-bottom:2px; }
-  .user-item:hover { background:var(--surface2); }
-  .avatar { width:34px; height:34px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; flex-shrink:0; color:var(--accent); font-family:'IBM Plex Mono',monospace; }
-  .user-item-info .name { font-size:13px; font-weight:500; }
-  .user-item-info .bot-tag { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--accent2); margin-top:1px; }
-  .token-box { margin:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px; }
-  .token-box .token-label { font-size:10px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; color:var(--muted); text-transform:uppercase; margin-bottom:6px; }
-  .token-box .token-value { font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--accent); word-break:break-all; line-height:1.5; }
-  .chat-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-  .chat-header { padding:16px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; background:var(--surface); }
-  .chat-header-info .chat-name { font-size:15px; font-weight:600; }
-  .chat-header-info .chat-sub { font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
-  .messages { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:12px; }
+  /* CHAT APP */
+  #chat-screen { display:none; height:100vh; }
+  .app { display:flex; height:100vh; }
+
+  /* Sidebar */
+  .sidebar { width:280px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+  .me-header { padding:16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+  .me-avatar { width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+  .me-info .me-name { font-size:14px; font-weight:600; }
+  .me-info .me-user { font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
+  .contacts-label { font-size:10px; font-family:'IBM Plex Mono',monospace; letter-spacing:2px; color:var(--muted); text-transform:uppercase; padding:16px 16px 8px; }
+  .contacts { flex:1; overflow-y:auto; }
+  .contact { display:flex; align-items:center; gap:12px; padding:12px 16px; cursor:pointer; transition:background .15s; border-left:2px solid transparent; }
+  .contact:hover { background:var(--surface2); }
+  .contact.active { background:var(--surface2); border-left-color:var(--accent); }
+  .contact-avatar { width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--accent2); font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+  .contact-info .contact-name { font-size:13px; font-weight:500; }
+  .contact-info .contact-preview { font-size:11px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+  .unread { background:var(--accent); color:#000; font-size:10px; font-weight:600; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; margin-left:auto; font-family:'IBM Plex Mono',monospace; }
+  .bot-id-box { margin:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; }
+  .bot-id-label { font-size:9px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
+  .bot-id-value { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--accent); word-break:break-all; line-height:1.4; cursor:pointer; }
+
+  /* Chat area */
+  .chat-area { flex:1; display:flex; flex-direction:column; }
+  .chat-header { padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; gap:12px; }
+  .chat-header-avatar { width:34px; height:34px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--accent2); font-family:'IBM Plex Mono',monospace; }
+  .chat-header-info .chat-with { font-size:14px; font-weight:600; }
+  .chat-header-info .chat-status { font-size:11px; color:var(--accent); font-family:'IBM Plex Mono',monospace; }
+  .no-chat { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:8px; }
+  .no-chat p { font-size:13px; font-family:'IBM Plex Mono',monospace; }
+  .messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:6px; }
   .messages::-webkit-scrollbar { width:4px; }
   .messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-  .msg-bubble { max-width:72%; animation:fadeUp .2s ease; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  .msg-bubble.own { align-self:flex-end; }
-  .msg-bubble.other, .msg-bubble.bot-reply { align-self:flex-start; }
-  .msg-meta { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--muted); margin-bottom:4px; display:flex; gap:8px; align-items:center; }
-  .msg-bubble.own .msg-meta { justify-content:flex-end; }
-  .msg-tag { padding:1px 6px; border-radius:4px; font-size:9px; letter-spacing:1px; text-transform:uppercase; }
-  .msg-tag.user-tag { background:#1a2a1a; color:var(--accent); }
-  .msg-tag.bot-tag { background:#1a1a2e; color:var(--accent2); }
-  .msg-content { padding:12px 16px; border-radius:var(--radius); font-size:14px; line-height:1.6; border:1px solid var(--border); }
-  .msg-bubble.own .msg-content { background:#1a2a1a; border-color:#2a3a2a; }
-  .msg-bubble.other .msg-content { background:var(--surface2); }
-  .msg-bubble.bot-reply .msg-content { background:#1a1a2e; border-color:#1a1a3e; }
-  .input-area { padding:16px 24px; border-top:1px solid var(--border); background:var(--surface); display:flex; gap:12px; align-items:flex-end; }
-  .input-wrap { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
-  .to-select-wrap { display:flex; align-items:center; gap:8px; }
-  .to-select-wrap label { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--muted); letter-spacing:1px; white-space:nowrap; }
-  .to-select-wrap select { background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12px; padding:4px 8px; outline:none; cursor:pointer; }
-  .msg-input { background:transparent; border:none; color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; outline:none; resize:none; width:100%; }
-  .send-btn { width:44px; height:44px; border-radius:var(--radius); background:var(--accent); border:none; color:#000; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity .2s; }
+  .msg { max-width:68%; animation:pop .15s ease; }
+  @keyframes pop { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
+  .msg.mine { align-self:flex-end; }
+  .msg.theirs { align-self:flex-start; }
+  .msg-time { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--muted); margin-bottom:2px; }
+  .msg.mine .msg-time { text-align:right; }
+  .msg-bubble { padding:10px 14px; border-radius:12px; font-size:14px; line-height:1.6; }
+  .msg.mine .msg-bubble { background:#1a3a1a; border:1px solid #2a4a2a; border-bottom-right-radius:4px; }
+  .msg.theirs .msg-bubble { background:var(--surface2); border:1px solid var(--border); border-bottom-left-radius:4px; }
+
+  /* Input */
+  .input-area { padding:14px 20px; border-top:1px solid var(--border); background:var(--surface); display:flex; gap:10px; align-items:flex-end; }
+  .msg-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px; color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; outline:none; resize:none; transition:border-color .2s; min-height:20px; }
+  .msg-input:focus { border-color:var(--accent); }
+  .send-btn { width:42px; height:42px; border-radius:var(--radius); background:var(--accent); border:none; color:#000; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity .2s; }
   .send-btn:hover { opacity:.85; }
-  .empty-state { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:12px; }
-  .empty-state p { font-size:13px; font-family:'IBM Plex Mono',monospace; }
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="logo">Schnuppertag 2025</div>
+    <div class="logo">Schnuppertag 2026</div>
     <h1>Willkommen</h1>
-    <p>Melde dich an um loszulegen</p>
+    <p>Melde dich an und gib deinen Namen ein</p>
     <div class="field">
       <label>Benutzername</label>
-      <input type="text" id="username" placeholder="schueler1" autocomplete="off"/>
+      <input type="text" id="u" placeholder="schnuppi1" autocomplete="off"/>
     </div>
     <div class="field">
       <label>Passwort</label>
-      <input type="password" id="password" placeholder="••••••••"/>
+      <input type="password" id="p" placeholder="••••••••"/>
     </div>
-    <button class="btn-primary" onclick="login()">EINLOGGEN →</button>
-    <div class="error-msg" id="login-error">Falscher Benutzername oder Passwort</div>
+    <div class="field">
+      <label>Dein Name</label>
+      <input type="text" id="n" placeholder="z.B. Luca"/>
+    </div>
+    <button class="btn-login" onclick="login()">EINLOGGEN →</button>
+    <div class="error-msg" id="err">Falscher Benutzername oder Passwort</div>
   </div>
 </div>
 
+<!-- CHAT -->
 <div id="chat-screen">
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="app-name">AI Chat</div>
-      <div class="user-info" id="display-name">—</div>
-      <div class="user-sub" id="username-display">—</div>
-    </div>
-    <div class="section-label">Schüler</div>
-    <div class="user-list" id="user-list"></div>
-    <div class="token-box">
-      <div class="token-label">Dein Bot Token</div>
-      <div class="token-value" id="bot-token-display">—</div>
-    </div>
-  </div>
-  <div class="chat-main">
-    <div class="chat-header">
-      <div class="chat-header-info">
-        <div class="chat-name">Gruppenchat</div>
-        <div class="chat-sub" id="poll-status">Verbinde...</div>
-      </div>
-    </div>
-    <div class="messages" id="messages">
-      <div class="empty-state">
-        <p>Noch keine Nachrichten — schreib jemanden an!</p>
-      </div>
-    </div>
-    <div class="input-area">
-      <div class="input-wrap">
-        <div class="to-select-wrap">
-          <label>AN →</label>
-          <select id="to-select"><option value="">Empfänger wählen...</option></select>
+  <div class="app">
+    <div class="sidebar">
+      <div class="me-header">
+        <div class="me-avatar" id="me-avatar">—</div>
+        <div class="me-info">
+          <div class="me-name" id="me-name">—</div>
+          <div class="me-user" id="me-user">—</div>
         </div>
-        <textarea class="msg-input" id="msg-input" rows="1" placeholder="Nachricht schreiben..." onkeydown="handleKey(event)"></textarea>
       </div>
-      <button class="send-btn" onclick="sendMessage()">↑</button>
+      <div class="contacts-label">Chats</div>
+      <div class="contacts" id="contacts"></div>
+      <div class="bot-id-box">
+        <div class="bot-id-label">Deine Bot-ID (für später)</div>
+        <div class="bot-id-value" id="bot-id" title="Klicken zum Kopieren">—</div>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chat-area">
+      <div class="no-chat" id="no-chat">
+        <p>← Wähle einen Chat</p>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-  const SERVER = window.location.origin;
-  let currentUser, displayName, botToken, users = [];
-  let lastId = 0;
+const S = window.location.origin;
+let me, myName, myBotId, users = [];
+let activeChat = null;
+let lastIds = {};
+let previews = {};
+let pollTimer = null;
 
-  async function login() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    const err = document.getElementById("login-error");
+async function login() {
+  const u = document.getElementById("u").value.trim();
+  const p = document.getElementById("p").value;
+  const n = document.getElementById("n").value.trim();
+  const err = document.getElementById("err");
+  try {
+    const r = await fetch(`${S}/api/login`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username:u, password:p, custom_name:n})});
+    const d = await r.json();
+    if (d.success) {
+      me = d.username; myName = d.display_name; myBotId = d.bot_id;
+      err.style.display = "none";
+      startApp();
+    } else { err.style.display = "block"; }
+  } catch(e) { err.style.display = "block"; err.textContent = "Server nicht erreichbar"; }
+}
+
+async function startApp() {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("chat-screen").style.display = "block";
+  document.getElementById("me-name").textContent = myName;
+  document.getElementById("me-user").textContent = me;
+  document.getElementById("me-avatar").textContent = myName.slice(0,2).toUpperCase();
+  const botEl = document.getElementById("bot-id");
+  botEl.textContent = myBotId;
+  botEl.onclick = () => { navigator.clipboard.writeText(myBotId); botEl.textContent = "✓ Kopiert!"; setTimeout(()=>botEl.textContent=myBotId, 1500); };
+
+  const r = await fetch(`${S}/api/users`);
+  users = (await r.json()).filter(u => u.username !== me);
+  renderContacts();
+  pollTimer = setInterval(pollAll, 2000);
+}
+
+function renderContacts() {
+  const c = document.getElementById("contacts");
+  c.innerHTML = "";
+  users.forEach(u => {
+    const el = document.createElement("div");
+    el.className = "contact" + (activeChat === u.username ? " active" : "");
+    el.id = "contact-" + u.username;
+    const preview = previews[u.username] || "";
+    el.innerHTML = `
+      <div class="contact-avatar">${u.display.slice(0,2).toUpperCase()}</div>
+      <div class="contact-info">
+        <div class="contact-name">${u.display}</div>
+        <div class="contact-preview">${esc(preview)}</div>
+      </div>`;
+    el.onclick = () => openChat(u);
+    c.appendChild(el);
+  });
+}
+
+function openChat(u) {
+  activeChat = u.username;
+  lastIds[u.username] = lastIds[u.username] || 0;
+  document.querySelectorAll(".contact").forEach(el => el.classList.remove("active"));
+  const el = document.getElementById("contact-" + u.username);
+  if (el) el.classList.add("active");
+
+  const area = document.getElementById("chat-area");
+  area.innerHTML = `
+    <div class="chat-header">
+      <div class="chat-header-avatar">${u.display.slice(0,2).toUpperCase()}</div>
+      <div class="chat-header-info">
+        <div class="chat-with">${u.display}</div>
+        <div class="chat-status">● Online</div>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <textarea class="msg-input" id="msg-input" rows="1" placeholder="Nachricht an ${u.display}..." onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" onclick="send()">↑</button>
+    </div>`;
+
+  loadHistory(u.username);
+}
+
+async function loadHistory(other) {
+  const r = await fetch(`${S}/api/history/${other}?me=${me}`);
+  const msgs = await r.json();
+  msgs.forEach(renderMsg);
+  if (msgs.length) {
+    lastIds[other] = msgs[msgs.length-1].id;
+    previews[other] = msgs[msgs.length-1].message;
+  }
+  scrollBottom();
+}
+
+async function pollAll() {
+  for (const u of users) {
+    const since = lastIds[u.username] || 0;
     try {
-      const res = await fetch(`${SERVER}/api/login`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username, password})});
-      const data = await res.json();
-      if (data.success) {
-        currentUser = data.username; displayName = data.display_name; botToken = data.bot_token;
-        err.style.display = "none";
-        startChat();
-      } else { err.style.display = "block"; }
-    } catch(e) { err.style.display = "block"; err.textContent = "Server nicht erreichbar"; }
+      const r = await fetch(`${S}/api/poll/${u.username}?me=${me}&since=${since}`);
+      const msgs = await r.json();
+      msgs.forEach(m => {
+        lastIds[u.username] = Math.max(lastIds[u.username]||0, m.id);
+        previews[u.username] = m.message;
+        if (activeChat === u.username) { renderMsg(m); scrollBottom(); }
+      });
+      if (msgs.length) renderContacts();
+    } catch(e) {}
   }
+}
 
-  async function startChat() {
-    document.getElementById("login-screen").style.display = "none";
-    document.getElementById("chat-screen").style.display = "flex";
-    document.getElementById("display-name").textContent = displayName;
-    document.getElementById("username-display").textContent = currentUser;
-    document.getElementById("bot-token-display").textContent = botToken;
-    const res = await fetch(`${SERVER}/api/users`);
-    users = await res.json();
-    renderUserList();
-    populateToSelect();
-    const hRes = await fetch(`${SERVER}/api/history`);
-    const history = await hRes.json();
-    history.forEach(m => { renderMessage(m); lastId = Math.max(lastId, m.id); });
-    scrollBottom();
-    setInterval(pollMessages, 2000);
-    document.getElementById("poll-status").textContent = "Live ●";
-  }
+function renderMsg(msg) {
+  const container = document.getElementById("messages");
+  if (!container) return;
+  const isMine = msg.from === me;
+  const time = new Date(msg.timestamp).toLocaleTimeString("de-CH", {hour:"2-digit", minute:"2-digit"});
+  const div = document.createElement("div");
+  div.className = "msg " + (isMine ? "mine" : "theirs");
+  div.innerHTML = `<div class="msg-time">${isMine ? "Du" : msg.display_name} · ${time}</div><div class="msg-bubble">${esc(msg.message)}</div>`;
+  container.appendChild(div);
+}
 
-  async function pollMessages() {
-    try {
-      const res = await fetch(`${SERVER}/api/history`);
-      const all = await res.json();
-      const newMsgs = all.filter(m => m.id > lastId);
-      newMsgs.forEach(m => { renderMessage(m); lastId = Math.max(lastId, m.id); });
-      if (newMsgs.length) scrollBottom();
-    } catch(e) { document.getElementById("poll-status").textContent = "Verbindung verloren"; }
-  }
+async function send() {
+  const input = document.getElementById("msg-input");
+  if (!input || !activeChat) return;
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  await fetch(`${S}/api/chat`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username:me, to:activeChat, message:text})});
+}
 
-  function renderUserList() {
-    const list = document.getElementById("user-list");
-    list.innerHTML = "";
-    users.filter(u => u.username !== currentUser).forEach(u => {
-      const el = document.createElement("div");
-      el.className = "user-item";
-      el.innerHTML = `<div class="avatar">${u.display.slice(0,2).toUpperCase()}</div><div class="user-item-info"><div class="name">${u.display}</div><div class="bot-tag">${u.username}Bot</div></div>`;
-      el.onclick = () => { document.getElementById("to-select").value = u.username; };
-      list.appendChild(el);
-    });
-  }
-
-  function populateToSelect() {
-    const sel = document.getElementById("to-select");
-    users.filter(u => u.username !== currentUser).forEach(u => {
-      const opt = document.createElement("option");
-      opt.value = u.username;
-      opt.textContent = `${u.display} (${u.username}Bot)`;
-      sel.appendChild(opt);
-    });
-  }
-
-  function renderMessage(msg) {
-    const container = document.getElementById("messages");
-    const empty = container.querySelector(".empty-state");
-    if (empty) empty.remove();
-    const isOwn = msg.from === currentUser;
-    const isBot = msg.type === "bot";
-    const time = new Date(msg.timestamp).toLocaleTimeString("de-CH", {hour:"2-digit", minute:"2-digit"});
-    const bubble = document.createElement("div");
-    bubble.className = `msg-bubble ${isOwn ? "own" : isBot ? "bot-reply" : "other"}`;
-    let meta = isBot
-      ? `<div class="msg-meta"><span class="msg-tag bot-tag">BOT</span>${msg.bot_name} · ${time}</div>`
-      : isOwn
-        ? `<div class="msg-meta">${time} · Du → <span style="color:var(--accent2)">${msg.to_display}</span></div>`
-        : `<div class="msg-meta"><span class="msg-tag user-tag">USER</span>${msg.display_name} · ${time}</div>`;
-    bubble.innerHTML = `${meta}<div class="msg-content">${esc(msg.message)}</div>`;
-    container.appendChild(bubble);
-  }
-
-  async function sendMessage() {
-    const input = document.getElementById("msg-input");
-    const to = document.getElementById("to-select").value;
-    const text = input.value.trim();
-    if (!text || !to) return;
-    input.value = "";
-    await fetch(`${SERVER}/api/chat`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username:currentUser, to, message:text})});
-  }
-
-  function handleKey(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-  function scrollBottom() { const m = document.getElementById("messages"); m.scrollTop = m.scrollHeight; }
-  function esc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-  document.addEventListener("keydown", e => { if (e.key==="Enter" && document.getElementById("login-screen").style.display!=="none") login(); });
+function handleKey(e) { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); send(); } }
+function scrollBottom() { const m=document.getElementById("messages"); if(m) m.scrollTop=m.scrollHeight; }
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+document.addEventListener("keydown", e => { if (e.key==="Enter" && document.getElementById("login-screen").style.display!=="none") login(); });
 </script>
 </body>
 </html>

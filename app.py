@@ -7,34 +7,37 @@ app = Flask(__name__)
 CORS(app, origins="*")
 
 USERS = {
-    "schueler1":  {"password": "pass123", "display": "Marco"},
-    "schueler2":  {"password": "pass123", "display": "Lena"},
-    "schueler3":  {"password": "pass123", "display": "David"},
-    "schueler4":  {"password": "pass123", "display": "Sarah"},
-    "schueler5":  {"password": "pass123", "display": "Tim"},
-    "schueler6":  {"password": "pass123", "display": "Nina"},
-    "schueler7":  {"password": "pass123", "display": "Finn"},
-    "schueler8":  {"password": "pass123", "display": "Jana"},
-    "schueler9":  {"password": "pass123", "display": "Leo"},
-    "schueler10": {"password": "pass123", "display": "Mia"},
+    "schnuppi1":  {"password": "Abraxas2026!", "display": "Schnuppi 1"},
+    "schnuppi2":  {"password": "Abraxas2026!", "display": "Schnuppi 2"},
+    "schnuppi3":  {"password": "Abraxas2026!", "display": "Schnuppi 3"},
+    "schnuppi4":  {"password": "Abraxas2026!", "display": "Schnuppi 4"},
+    "schnuppi5":  {"password": "Abraxas2026!", "display": "Schnuppi 5"},
+    "schnuppi6":  {"password": "Abraxas2026!", "display": "Schnuppi 6"},
+    "schnuppi7":  {"password": "Abraxas2026!", "display": "Schnuppi 7"},
+    "schnuppi8":  {"password": "Abraxas2026!", "display": "Schnuppi 8"},
+    "schnuppi9":  {"password": "Abraxas2026!", "display": "Schnuppi 9"},
+    "schnuppi10": {"password": "Abraxas2026!", "display": "Schnuppi 10"},
 }
 
-BOT_TOKENS = {
-    "token-schueler1-abc":  "schueler1",
-    "token-schueler2-def":  "schueler2",
-    "token-schueler3-ghi":  "schueler3",
-    "token-schueler4-jkl":  "schueler4",
-    "token-schueler5-mno":  "schueler5",
-    "token-schueler6-pqr":  "schueler6",
-    "token-schueler7-stu":  "schueler7",
-    "token-schueler8-vwx":  "schueler8",
-    "token-schueler9-yz1":  "schueler9",
-    "token-schueler10-234": "schueler10",
+BOT_IDS = {
+    "id-schnuppi1-abc":  "schnuppi1",
+    "id-schnuppi2-def":  "schnuppi2",
+    "id-schnuppi3-ghi":  "schnuppi3",
+    "id-schnuppi4-jkl":  "schnuppi4",
+    "id-schnuppi5-mno":  "schnuppi5",
+    "id-schnuppi6-pqr":  "schnuppi6",
+    "id-schnuppi7-stu":  "schnuppi7",
+    "id-schnuppi8-vwx":  "schnuppi8",
+    "id-schnuppi9-yz1":  "schnuppi9",
+    "id-schnuppi10-234": "schnuppi10",
 }
 
 messages = []
-last_bot_response = {}
 message_counter = 0
+custom_names = {}
+
+def chat_key(a, b):
+    return "-".join(sorted([a, b]))
 
 @app.route("/")
 def index():
@@ -45,46 +48,18 @@ def login():
     data = request.json
     user = USERS.get(data.get("username"))
     if user and user["password"] == data.get("password"):
-        token = next((t for t, u in BOT_TOKENS.items() if u == data["username"]), None)
-        return jsonify({"success": True, "display_name": user["display"], "username": data["username"], "bot_token": token})
+        custom_name = data.get("custom_name", "").strip()
+        if custom_name:
+            custom_names[data["username"]] = custom_name
+        bot_id = next((t for t, u in BOT_IDS.items() if u == data["username"]), None)
+        display = custom_names.get(data["username"], user["display"])
+        return jsonify({
+            "success": True,
+            "display_name": display,
+            "username": data["username"],
+            "bot_id": bot_id
+        })
     return jsonify({"success": False}), 401
-
-@app.route("/api/messages", methods=["GET"])
-def get_messages():
-    token = request.headers.get("Authorization")
-    username = BOT_TOKENS.get(token)
-    if not username:
-        return jsonify({"error": "Ungültiger Token"}), 401
-    since = int(request.args.get("since", 0))
-    pending = [m for m in messages if m["id"] > since and m.get("to") == username and m.get("type") == "user"]
-    return jsonify(pending)
-
-@app.route("/api/send", methods=["POST"])
-def bot_send():
-    global message_counter
-    token = request.headers.get("Authorization")
-    username = BOT_TOKENS.get(token)
-    if not username:
-        return jsonify({"error": "Ungültiger Token"}), 401
-    now = time.time()
-    if username in last_bot_response and now - last_bot_response[username] < 15:
-        return jsonify({"error": "Rate limit"}), 429
-    last_bot_response[username] = now
-    data = request.json
-    message_counter += 1
-    msg = {
-        "id": message_counter,
-        "type": "bot",
-        "from": username,
-        "bot_name": data.get("bot_name", username + "Bot"),
-        "message": data.get("message", ""),
-        "timestamp": int(time.time() * 1000),
-        "display_name": USERS[username]["display"]
-    }
-    messages.append(msg)
-    if len(messages) > 200:
-        messages.pop(0)
-    return jsonify({"success": True})
 
 @app.route("/api/chat", methods=["POST"])
 def chat_send():
@@ -95,28 +70,83 @@ def chat_send():
     if username not in USERS or to not in USERS:
         return jsonify({"error": "Ungültiger User"}), 400
     message_counter += 1
+    display = custom_names.get(username, USERS[username]["display"])
     msg = {
         "id": message_counter,
-        "type": "user",
+        "chat_key": chat_key(username, to),
         "from": username,
         "to": to,
         "message": data.get("message", ""),
         "timestamp": int(time.time() * 1000),
-        "display_name": USERS[username]["display"],
-        "to_display": USERS[to]["display"]
+        "display_name": display,
     }
     messages.append(msg)
-    if len(messages) > 200:
+    if len(messages) > 500:
         messages.pop(0)
-    return jsonify({"success": True})
+    return jsonify({"success": True, "id": message_counter})
 
-@app.route("/api/history", methods=["GET"])
-def get_history():
-    return jsonify(messages[-50:])
+@app.route("/api/history/<other>", methods=["GET"])
+def get_history(other):
+    username = request.args.get("me")
+    if not username or username not in USERS or other not in USERS:
+        return jsonify([])
+    key = chat_key(username, other)
+    chat = [m for m in messages if m.get("chat_key") == key]
+    return jsonify(chat[-50:])
+
+@app.route("/api/poll/<other>", methods=["GET"])
+def poll(other):
+    username = request.args.get("me")
+    since = int(request.args.get("since", 0))
+    if not username or username not in USERS or other not in USERS:
+        return jsonify([])
+    key = chat_key(username, other)
+    new = [m for m in messages if m.get("chat_key") == key and m["id"] > since]
+    return jsonify(new)
 
 @app.route("/api/users", methods=["GET"])
 def get_users():
-    return jsonify([{"username": k, "display": v["display"]} for k, v in USERS.items()])
+    return jsonify([{
+        "username": k,
+        "display": custom_names.get(k, v["display"])
+    } for k, v in USERS.items()])
+
+@app.route("/api/bot/messages", methods=["GET"])
+def bot_messages():
+    bot_id = request.headers.get("Authorization")
+    username = BOT_IDS.get(bot_id)
+    if not username:
+        return jsonify({"error": "Ungültige ID"}), 401
+    since = int(request.args.get("since", 0))
+    pending = [m for m in messages if m["id"] > since and m.get("to") == username]
+    return jsonify(pending)
+
+@app.route("/api/bot/send", methods=["POST"])
+def bot_send():
+    global message_counter
+    bot_id = request.headers.get("Authorization")
+    username = BOT_IDS.get(bot_id)
+    if not username:
+        return jsonify({"error": "Ungültige ID"}), 401
+    data = request.json
+    to = data.get("to")
+    if not to or to not in USERS:
+        return jsonify({"error": "Ungültiger Empfänger"}), 400
+    message_counter += 1
+    display = custom_names.get(username, USERS[username]["display"])
+    msg = {
+        "id": message_counter,
+        "chat_key": chat_key(username, to),
+        "from": username,
+        "to": to,
+        "message": data.get("message", ""),
+        "timestamp": int(time.time() * 1000),
+        "display_name": display,
+    }
+    messages.append(msg)
+    if len(messages) > 500:
+        messages.pop(0)
+    return jsonify({"success": True})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

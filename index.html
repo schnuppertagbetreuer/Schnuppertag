@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schnuppertag Chat</title>
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1f1f1f;
+    --border: #2a2a2a;
+    --accent: #00ff88;
+    --accent2: #0088ff;
+    --text: #e8e8e8;
+    --muted: #666;
+    --user-msg: #1a2a1a;
+    --bot-msg: #1a1a2e;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--bg);
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 360px;
+  }
+
+  .login-box .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .login-box h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .login-box p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus { border-color: var(--accent); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+
+  .error-msg {
+    font-size: 12px;
+    color: #ff4444;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* ── CHAT APP ── */
+  #chat-screen {
+    display: none;
+    height: 100vh;
+    flex-direction: row;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-header .app-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-header .user-info {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .sidebar-header .user-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 16px 16px 8px;
+  }
+
+  .user-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px 8px;
+  }
+
+  .user-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .user-item:hover { background: var(--surface2); }
+  .user-item.active { background: var(--surface2); border: 1px solid var(--border); }
+
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .user-item-info .name {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .user-item-info .bot-tag {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent2);
+    margin-top: 1px;
+  }
+
+  .token-box {
+    margin: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+  }
+
+  .token-box .token-label {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .token-box .token-value {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent);
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
+  /* Main chat */
+  .chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chat-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+  }
+
+  .chat-header .to-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent2);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .chat-header-info .chat-name { font-size: 15px; font-weight: 600; }
+  .chat-header-info .chat-sub { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    margin-left: auto;
+  }
+  .status-dot.online { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg-bubble {
+    max-width: 72%;
+    animation: fadeUp 0.2s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-bubble.own { align-self: flex-end; }
+  .msg-bubble.other { align-self: flex-start; }
+
+  .msg-meta {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .msg-bubble.own .msg-meta { justify-content: flex-end; }
+
+  .msg-tag {
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .msg-tag.user-tag { background: #1a2a1a; color: var(--accent); }
+  .msg-tag.bot-tag  { background: #1a1a2e; color: var(--accent2); }
+
+  .msg-content {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+
+  .msg-bubble.own .msg-content {
+    background: var(--user-msg);
+    border-color: #2a3a2a;
+  }
+
+  .msg-bubble.other .msg-content {
+    background: var(--surface2);
+  }
+
+  .msg-bubble.bot-reply .msg-content {
+    background: var(--bot-msg);
+    border-color: #1a1a3e;
+  }
+
+  .to-badge {
+    font-size: 11px;
+    color: var(--accent2);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 0 24px;
+    margin-bottom: 8px;
+  }
+
+  .typing-indicator.visible { display: flex; }
+
+  .typing-dots span {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--muted);
+    margin: 0 2px;
+    animation: bounce 1s infinite;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  /* Input area */
+  .input-area {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .input-wrap {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .to-select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .to-select-wrap label {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .to-select-wrap select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .msg-input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    resize: none;
+    width: 100%;
+    min-height: 20px;
+    max-height: 100px;
+  }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: var(--radius);
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+  }
+
+  .send-btn:hover { opacity: 0.85; }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    gap: 12px;
+  }
+
+  .empty-state .icon { font-size: 40px; opacity: 0.3; }
+  .empty-state p { font-size: 13px; font-family: 'IBM Plex Mono', monospace; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="logo">Schnuppertag 2025</div>
+    <h1>Willkommen</h1>
+    <p>Melde dich an um loszulegen</p>
+    <div class="field">
+      <label>Benutzername</label>
+      <input type="text" id="username" placeholder="schueler1" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Passwort</label>
+      <input type="password" id="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn-primary" onclick="login()">EINLOGGEN →</button>
+    <div class="error-msg" id="login-error">Falscher Benutzername oder Passwort</div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="chat-screen">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="app-name">AI Chat</div>
+      <div class="user-info" id="display-name">—</div>
+      <div class="user-sub" id="username-display">—</div>
+    </div>
+    <div class="section-label">Schüler</div>
+    <div class="user-list" id="user-list"></div>
+    <div class="token-box">
+      <div class="token-label">Dein Bot Token</div>
+      <div class="token-value" id="bot-token-display">—</div>
+    </div>
+  </div>
+
+  <div class="chat-main">
+    <div class="chat-header" id="chat-header" style="display:none">
+      <div class="to-avatar" id="to-avatar">?</div>
+      <div class="chat-header-info">
+        <div class="chat-name" id="chat-name">—</div>
+        <div class="chat-sub" id="chat-sub">—</div>
+      </div>
+      <div class="status-dot" id="status-dot"></div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="empty-state">
+        <div class="icon">⌨</div>
+        <p>Wähle einen Schüler aus um zu schreiben</p>
+      </div>
+    </div>
+
+    <div class="typing-indicator" id="typing">
+      <div class="typing-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace" id="typing-text">Bot tippt...</span>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <div class="to-select-wrap">
+          <label>AN →</label>
+          <select id="to-select">
+            <option value="">Empfänger wählen...</option>
+          </select>
+        </div>
+        <textarea class="msg-input" id="msg-input" rows="1"
+          placeholder="Nachricht schreiben..."
+          onkeydown="handleKey(event)"></textarea>
+      </div>
+      <button class="send-btn" onclick="sendMessage()">↑</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SERVER = window.location.origin;  // Railway: automatisch korrekt
+  let socket, currentUser, displayName, botToken, users = [];
+  let selectedTo = null;
+
+  // ── Login ──────────────────────────────────────────────────────────────────
+  async function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const err = document.getElementById("login-error");
+
+    try {
+      const res = await fetch(`${SERVER}/api/login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        currentUser = data.username;
+        displayName = data.display_name;
+        botToken = data.bot_token;
+        err.style.display = "none";
+        startChat();
+      } else {
+        err.style.display = "block";
+      }
+    } catch(e) {
+      err.style.display = "block";
+      err.textContent = "Server nicht erreichbar";
+    }
+  }
+
+  // ── Chat starten ──────────────────────────────────────────────────────────
+  async function startChat() {
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("chat-screen").style.display = "flex";
+    document.getElementById("display-name").textContent = displayName;
+    document.getElementById("username-display").textContent = currentUser;
+    document.getElementById("bot-token-display").textContent = botToken;
+
+    // Users laden
+    const res = await fetch(`${SERVER}/api/users`);
+    users = await res.json();
+    renderUserList();
+    populateToSelect();
+
+    // History laden
+    const hRes = await fetch(`${SERVER}/api/history`);
+    const history = await hRes.json();
+    history.forEach(renderMessage);
+    scrollBottom();
+
+    // Socket verbinden
+    socket = io(SERVER);
+    socket.on("new_message", (msg) => {
+      renderMessage(msg);
+      scrollBottom();
+    });
+  }
+
+  // ── User Liste ─────────────────────────────────────────────────────────────
+  function renderUserList() {
+    const list = document.getElementById("user-list");
+    list.innerHTML = "";
+    users.filter(u => u.username !== currentUser).forEach(u => {
+      const initials = u.display.slice(0, 2).toUpperCase();
+      const el = document.createElement("div");
+      el.className = "user-item";
+      el.id = `user-item-${u.username}`;
+      el.innerHTML = `
+        <div class="avatar">${initials}</div>
+        <div class="user-item-info">
+          <div class="name">${u.display}</div>
+          <div class="bot-tag">${u.username}Bot</div>
+        </div>`;
+      el.onclick = () => selectUser(u);
+      list.appendChild(el);
+    });
+  }
+
+  function populateToSelect() {
+    const sel = document.getElementById("to-select");
+    users.filter(u => u.username !== currentUser).forEach(u => {
+      const opt = document.createElement("option");
+      opt.value = u.username;
+      opt.textContent = `${u.display} (${u.username}Bot)`;
+      sel.appendChild(opt);
+    });
+  }
+
+  function selectUser(u) {
+    selectedTo = u.username;
+    document.getElementById("to-select").value = u.username;
+    document.querySelectorAll(".user-item").forEach(el => el.classList.remove("active"));
+    const item = document.getElementById(`user-item-${u.username}`);
+    if (item) item.classList.add("active");
+
+    const header = document.getElementById("chat-header");
+    header.style.display = "flex";
+    document.getElementById("to-avatar").textContent = u.display.slice(0, 2).toUpperCase();
+    document.getElementById("chat-name").textContent = u.display;
+    document.getElementById("chat-sub").textContent = `${u.username}Bot · AI Assistent`;
+  }
+
+  // ── Nachricht rendern ─────────────────────────────────────────────────────
+  function renderMessage(msg) {
+    const container = document.getElementById("messages");
+    const empty = container.querySelector(".empty-state");
+    if (empty) empty.remove();
+
+    const isOwn = msg.from === currentUser;
+    const isBot = msg.type === "bot";
+    const time = new Date(msg.timestamp).toLocaleTimeString("de-CH", {hour:"2-digit", minute:"2-digit"});
+
+    const bubble = document.createElement("div");
+    bubble.className = `msg-bubble ${isOwn ? "own" : (isBot ? "bot-reply" : "other")}`;
+
+    let meta = "";
+    if (isBot) {
+      meta = `<div class="msg-meta"><span class="msg-tag bot-tag">BOT</span>${msg.bot_name || msg.display_name + "Bot"} · ${time}</div>`;
+    } else if (isOwn) {
+      meta = `<div class="msg-meta">${time} · Du → <span style="color:var(--accent2)">${msg.to_display}</span></div>`;
+    } else {
+      meta = `<div class="msg-meta"><span class="msg-tag user-tag">USER</span>${msg.display_name} · ${time}</div>`;
+    }
+
+    bubble.innerHTML = `${meta}<div class="msg-content">${escHtml(msg.message)}</div>`;
+    container.appendChild(bubble);
+  }
+
+  // ── Nachricht senden ──────────────────────────────────────────────────────
+  async function sendMessage() {
+    const input = document.getElementById("msg-input");
+    const toSel = document.getElementById("to-select");
+    const to = toSel.value || selectedTo;
+    const text = input.value.trim();
+
+    if (!text || !to) return;
+
+    input.value = "";
+    input.style.height = "auto";
+
+    await fetch(`${SERVER}/api/chat`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({username: currentUser, to, message: text})
+    });
+  }
+
+  function handleKey(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function scrollBottom() {
+    const m = document.getElementById("messages");
+    m.scrollTop = m.scrollHeight;
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  // Enter on login
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && document.getElementById("login-screen").style.display !== "none") {
+      login();
+    }
+  });
+</script>
+</body>
+</html>

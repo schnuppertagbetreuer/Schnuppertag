@@ -7,16 +7,21 @@ app = Flask(__name__)
 CORS(app, origins="*")
 
 USERS = {
-    "schnuppi1":  {"password": "Abraxas2026!", "display": "Schnuppi 1"},
-    "schnuppi2":  {"password": "Abraxas2026!", "display": "Schnuppi 2"},
-    "schnuppi3":  {"password": "Abraxas2026!", "display": "Schnuppi 3"},
-    "schnuppi4":  {"password": "Abraxas2026!", "display": "Schnuppi 4"},
-    "schnuppi5":  {"password": "Abraxas2026!", "display": "Schnuppi 5"},
-    "schnuppi6":  {"password": "Abraxas2026!", "display": "Schnuppi 6"},
-    "schnuppi7":  {"password": "Abraxas2026!", "display": "Schnuppi 7"},
-    "schnuppi8":  {"password": "Abraxas2026!", "display": "Schnuppi 8"},
-    "schnuppi9":  {"password": "Abraxas2026!", "display": "Schnuppi 9"},
-    "schnuppi10": {"password": "Abraxas2026!", "display": "Schnuppi 10"},
+    # Schnuppis
+    "schnuppi1":  {"password": "Abraxas2026!", "display": "Schnuppi 1",  "role": "schnuppi"},
+    "schnuppi2":  {"password": "Abraxas2026!", "display": "Schnuppi 2",  "role": "schnuppi"},
+    "schnuppi3":  {"password": "Abraxas2026!", "display": "Schnuppi 3",  "role": "schnuppi"},
+    "schnuppi4":  {"password": "Abraxas2026!", "display": "Schnuppi 4",  "role": "schnuppi"},
+    "schnuppi5":  {"password": "Abraxas2026!", "display": "Schnuppi 5",  "role": "schnuppi"},
+    "schnuppi6":  {"password": "Abraxas2026!", "display": "Schnuppi 6",  "role": "schnuppi"},
+    "schnuppi7":  {"password": "Abraxas2026!", "display": "Schnuppi 7",  "role": "schnuppi"},
+    "schnuppi8":  {"password": "Abraxas2026!", "display": "Schnuppi 8",  "role": "schnuppi"},
+    "schnuppi9":  {"password": "Abraxas2026!", "display": "Schnuppi 9",  "role": "schnuppi"},
+    "schnuppi10": {"password": "Abraxas2026!", "display": "Schnuppi 10", "role": "schnuppi"},
+    # Betreuer
+    "betreuer1":  {"password": "Abraxas2026!", "display": "Betreuer 1",  "role": "betreuer"},
+    "betreuer2":  {"password": "Abraxas2026!", "display": "Betreuer 2",  "role": "betreuer"},
+    "betreuer3":  {"password": "Abraxas2026!", "display": "Betreuer 3",  "role": "betreuer"},
 }
 
 BOT_IDS = {
@@ -57,9 +62,23 @@ def login():
             "success": True,
             "display_name": display,
             "username": data["username"],
-            "bot_id": bot_id
+            "bot_id": bot_id,
+            "role": user["role"]
         })
     return jsonify({"success": False}), 401
+
+@app.route("/api/reset", methods=["POST"])
+def reset():
+    global messages, message_counter, custom_names
+    data = request.json
+    username = data.get("username")
+    user = USERS.get(username)
+    if not user or user["role"] != "betreuer":
+        return jsonify({"error": "Keine Berechtigung"}), 403
+    messages = []
+    message_counter = 0
+    custom_names = {}
+    return jsonify({"success": True})
 
 @app.route("/api/chat", methods=["POST"])
 def chat_send():
@@ -108,7 +127,8 @@ def poll(other):
 def get_users():
     return jsonify([{
         "username": k,
-        "display": custom_names.get(k, v["display"])
+        "display": custom_names.get(k, v["display"]),
+        "role": v["role"]
     } for k, v in USERS.items()])
 
 @app.route("/api/bot/messages", methods=["GET"])

@@ -3,30 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schnuppertag Chat</title>
+<title>Abraxas Schnuppertag Chat</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
   :root {
-    --bg:#0d0d0d; --surface:#161616; --surface2:#1f1f1f;
-    --border:#2a2a2a; --accent:#00ff88; --accent2:#0088ff;
-    --text:#e8e8e8; --muted:#666; --radius:10px;
+    --bg: #0a1a1a;
+    --surface: #0f2020;
+    --surface2: #163030;
+    --border: #1e4040;
+    --accent: #00b4b4;
+    --accent-dark: #008a8a;
+    --accent-light: #00d4d4;
+    --text: #e8f4f4;
+    --muted: #5a9090;
+    --radius: 10px;
+    --mine-bg: #0f3535;
+    --mine-border: #1a5050;
+    --theirs-bg: #163030;
+    --theirs-border: #1e4040;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'IBM Plex Sans',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
 
   /* LOGIN */
-  #login-screen { display:flex; align-items:center; justify-content:center; height:100vh; }
-  .login-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:48px 40px; width:360px; }
-  .logo { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:32px; }
-  .login-box h1 { font-size:24px; font-weight:600; margin-bottom:8px; }
-  .login-box p { font-size:13px; color:var(--muted); margin-bottom:32px; }
-  .field { margin-bottom:16px; }
-  .field label { display:block; font-size:11px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; }
-  .field input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; outline:none; transition:border-color .2s; }
+  #login-screen { display:flex; align-items:center; justify-content:center; height:100vh; background: linear-gradient(135deg, #0a1a1a 0%, #0f2a2a 100%); }
+  .login-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:48px 40px; width:380px; box-shadow: 0 20px 60px rgba(0,180,180,0.1); }
+  .login-logo { display:flex; align-items:center; gap:10px; margin-bottom:32px; }
+  .login-logo .logo-icon { width:36px; height:36px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:#fff; font-family:'IBM Plex Mono',monospace; }
+  .login-logo .logo-text { font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:500; color:var(--accent); letter-spacing:2px; }
+  .login-box h1 { font-size:22px; font-weight:600; margin-bottom:6px; }
+  .login-box p { font-size:13px; color:var(--muted); margin-bottom:28px; }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:11px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; }
+  .field input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:13px; outline:none; transition:border-color .2s; }
   .field input:focus { border-color:var(--accent); }
-  .btn-login { width:100%; background:var(--accent); color:#000; border:none; border-radius:var(--radius); padding:13px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; letter-spacing:1px; cursor:pointer; margin-top:8px; transition:opacity .2s; }
-  .btn-login:hover { opacity:.85; }
-  .error-msg { font-size:12px; color:#ff4444; margin-top:12px; display:none; }
+  .field input::placeholder { color:var(--muted); }
+  .btn-login { width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--radius); padding:13px; font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; letter-spacing:1px; cursor:pointer; margin-top:8px; transition:background .2s; }
+  .btn-login:hover { background:var(--accent-light); }
+  .error-msg { font-size:12px; color:#ff6b6b; margin-top:10px; display:none; }
 
   /* CHAT APP */
   #chat-screen { display:none; height:100vh; }
@@ -34,50 +48,59 @@
 
   /* Sidebar */
   .sidebar { width:280px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
-  .me-header { padding:16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
-  .me-avatar { width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+  .me-header { padding:16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; background:var(--surface2); }
+  .me-avatar { width:38px; height:38px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:#fff; font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
   .me-info .me-name { font-size:14px; font-weight:600; }
   .me-info .me-user { font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
-  .contacts-label { font-size:10px; font-family:'IBM Plex Mono',monospace; letter-spacing:2px; color:var(--muted); text-transform:uppercase; padding:16px 16px 8px; }
+  .sidebar-logo { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .sidebar-logo .s-icon { width:24px; height:24px; background:var(--accent); border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; font-family:'IBM Plex Mono',monospace; }
+  .sidebar-logo .s-text { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:2px; }
+  .contacts-label { font-size:10px; font-family:'IBM Plex Mono',monospace; letter-spacing:2px; color:var(--muted); text-transform:uppercase; padding:14px 16px 6px; }
   .contacts { flex:1; overflow-y:auto; }
-  .contact { display:flex; align-items:center; gap:12px; padding:12px 16px; cursor:pointer; transition:background .15s; border-left:2px solid transparent; }
+  .contacts::-webkit-scrollbar { width:4px; }
+  .contacts::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+  .contact { display:flex; align-items:center; gap:12px; padding:11px 16px; cursor:pointer; transition:background .15s; border-left:2px solid transparent; }
   .contact:hover { background:var(--surface2); }
   .contact.active { background:var(--surface2); border-left-color:var(--accent); }
-  .contact-avatar { width:38px; height:38px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--accent2); font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+  .contact-avatar { width:36px; height:36px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+  .contact.active .contact-avatar { background:var(--accent); color:#fff; border-color:var(--accent); }
   .contact-info .contact-name { font-size:13px; font-weight:500; }
-  .contact-info .contact-preview { font-size:11px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
-  .unread { background:var(--accent); color:#000; font-size:10px; font-weight:600; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; margin-left:auto; font-family:'IBM Plex Mono',monospace; }
+  .contact-info .contact-preview { font-size:11px; color:var(--muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
   .bot-id-box { margin:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; }
   .bot-id-label { font-size:9px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
-  .bot-id-value { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--accent); word-break:break-all; line-height:1.4; cursor:pointer; }
+  .bot-id-value { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--accent); word-break:break-all; line-height:1.4; cursor:pointer; transition:color .2s; }
+  .bot-id-value:hover { color:var(--accent-light); }
 
-  /* Chat area */
-  .chat-area { flex:1; display:flex; flex-direction:column; }
+  /* Chat */
+  .chat-area { flex:1; display:flex; flex-direction:column; background:var(--bg); }
   .chat-header { padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; gap:12px; }
-  .chat-header-avatar { width:34px; height:34px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--accent2); font-family:'IBM Plex Mono',monospace; }
+  .chat-header-avatar { width:34px; height:34px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:#fff; font-family:'IBM Plex Mono',monospace; }
   .chat-header-info .chat-with { font-size:14px; font-weight:600; }
   .chat-header-info .chat-status { font-size:11px; color:var(--accent); font-family:'IBM Plex Mono',monospace; }
-  .no-chat { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:8px; }
+  .no-chat { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:12px; }
+  .no-chat .no-chat-icon { font-size:40px; opacity:0.3; }
   .no-chat p { font-size:13px; font-family:'IBM Plex Mono',monospace; }
-  .messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:6px; }
+  .messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:8px; }
   .messages::-webkit-scrollbar { width:4px; }
   .messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-  .msg { max-width:68%; animation:pop .15s ease; }
-  @keyframes pop { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
-  .msg.mine { align-self:flex-end; }
-  .msg.theirs { align-self:flex-start; }
-  .msg-time { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--muted); margin-bottom:2px; }
-  .msg.mine .msg-time { text-align:right; }
-  .msg-bubble { padding:10px 14px; border-radius:12px; font-size:14px; line-height:1.6; }
-  .msg.mine .msg-bubble { background:#1a3a1a; border:1px solid #2a4a2a; border-bottom-right-radius:4px; }
-  .msg.theirs .msg-bubble { background:var(--surface2); border:1px solid var(--border); border-bottom-left-radius:4px; }
+
+  /* Alle Nachrichten LINKS */
+  .msg { max-width:72%; animation:pop .15s ease; align-self:flex-start; }
+  @keyframes pop { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  .msg-meta { font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); margin-bottom:3px; display:flex; align-items:center; gap:6px; }
+  .msg-name { color:var(--accent); font-weight:500; }
+  .msg-name.is-me { color:var(--accent-light); }
+  .msg-bubble { padding:10px 14px; border-radius:0 12px 12px 12px; font-size:14px; line-height:1.6; }
+  .msg.mine .msg-bubble { background:var(--mine-bg); border:1px solid var(--mine-border); border-radius:0 12px 12px 12px; }
+  .msg.theirs .msg-bubble { background:var(--theirs-bg); border:1px solid var(--theirs-border); }
 
   /* Input */
   .input-area { padding:14px 20px; border-top:1px solid var(--border); background:var(--surface); display:flex; gap:10px; align-items:flex-end; }
-  .msg-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px; color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; outline:none; resize:none; transition:border-color .2s; min-height:20px; }
+  .msg-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:11px 14px; color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; outline:none; resize:none; transition:border-color .2s; }
   .msg-input:focus { border-color:var(--accent); }
-  .send-btn { width:42px; height:42px; border-radius:var(--radius); background:var(--accent); border:none; color:#000; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:opacity .2s; }
-  .send-btn:hover { opacity:.85; }
+  .msg-input::placeholder { color:var(--muted); }
+  .send-btn { width:42px; height:42px; border-radius:var(--radius); background:var(--accent); border:none; color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .2s; }
+  .send-btn:hover { background:var(--accent-light); }
 </style>
 </head>
 <body>
@@ -85,8 +108,11 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="logo">Schnuppertag 2026</div>
-    <h1>Willkommen</h1>
+    <div class="login-logo">
+      <div class="logo-icon">a</div>
+      <div class="logo-text">abraxas</div>
+    </div>
+    <h1>Schnuppertag 2026</h1>
     <p>Melde dich an und gib deinen Namen ein</p>
     <div class="field">
       <label>Benutzername</label>
@@ -109,6 +135,10 @@
 <div id="chat-screen">
   <div class="app">
     <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="s-icon">a</div>
+        <div class="s-text">abraxas chat</div>
+      </div>
       <div class="me-header">
         <div class="me-avatar" id="me-avatar">—</div>
         <div class="me-info">
@@ -119,13 +149,14 @@
       <div class="contacts-label">Chats</div>
       <div class="contacts" id="contacts"></div>
       <div class="bot-id-box">
-        <div class="bot-id-label">Deine Bot-ID (für später)</div>
+        <div class="bot-id-label">Bot-ID (für später)</div>
         <div class="bot-id-value" id="bot-id" title="Klicken zum Kopieren">—</div>
       </div>
     </div>
 
     <div class="chat-area" id="chat-area">
       <div class="no-chat" id="no-chat">
+        <div class="no-chat-icon">💬</div>
         <p>← Wähle einen Chat</p>
       </div>
     </div>
@@ -138,7 +169,6 @@ let me, myName, myBotId, users = [];
 let activeChat = null;
 let lastIds = {};
 let previews = {};
-let pollTimer = null;
 
 async function login() {
   const u = document.getElementById("u").value.trim();
@@ -169,7 +199,7 @@ async function startApp() {
   const r = await fetch(`${S}/api/users`);
   users = (await r.json()).filter(u => u.username !== me);
   renderContacts();
-  pollTimer = setInterval(pollAll, 2000);
+  setInterval(pollAll, 2000);
 }
 
 function renderContacts() {
@@ -194,9 +224,7 @@ function renderContacts() {
 function openChat(u) {
   activeChat = u.username;
   lastIds[u.username] = lastIds[u.username] || 0;
-  document.querySelectorAll(".contact").forEach(el => el.classList.remove("active"));
-  const el = document.getElementById("contact-" + u.username);
-  if (el) el.classList.add("active");
+  renderContacts();
 
   const area = document.getElementById("chat-area");
   area.innerHTML = `
@@ -249,8 +277,14 @@ function renderMsg(msg) {
   const isMine = msg.from === me;
   const time = new Date(msg.timestamp).toLocaleTimeString("de-CH", {hour:"2-digit", minute:"2-digit"});
   const div = document.createElement("div");
+  // Alle links aber eigene Nachrichten anders eingefärbt
   div.className = "msg " + (isMine ? "mine" : "theirs");
-  div.innerHTML = `<div class="msg-time">${isMine ? "Du" : msg.display_name} · ${time}</div><div class="msg-bubble">${esc(msg.message)}</div>`;
+  div.innerHTML = `
+    <div class="msg-meta">
+      <span class="msg-name ${isMine ? 'is-me' : ''}">${isMine ? "Du" : msg.display_name}</span>
+      <span>${time}</span>
+    </div>
+    <div class="msg-bubble">${esc(msg.message)}</div>`;
   container.appendChild(div);
 }
 
